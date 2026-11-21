@@ -384,6 +384,10 @@ button {
 }
 
 .destination-card {
+    cursor: pointer;
+}
+
+.destination-card {
   overflow: hidden;
   background: #fff;
   border: 1px solid #e7ece8;

@@ -709,56 +709,182 @@
     ========================= -->
 
     <script>
+        // URL se data lena
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedDestination = urlParams.get("destination");
+        const editTripId = urlParams.get("editTripId");
 
-        const tripForm = document.getElementById("tripForm");
         const TRIPS_STORAGE_KEY = "aryanTravelTrips";
 
+        const tripForm = document.getElementById("tripForm");
+
+        const tripName = document.getElementById("tripName");
+        const destination = document.getElementById("destination");
+        const startDate = document.getElementById("startDate");
+        const endDate = document.getElementById("endDate");
+        const travellers = document.getElementById("travellers");
+        const tripType = document.getElementById("tripType");
+        const budget = document.getElementById("budget");
+        const description = document.getElementById("description");
+
+
+        // Local Storage se trips lena
+        function getSavedTrips() {
+            return JSON.parse(
+                localStorage.getItem(TRIPS_STORAGE_KEY) || "[]"
+            );
+        }
+
+
+        // EDIT MODE: Purani trip ka data form mein load karna
+        let existingTrip = null;
+
+        if (editTripId) {
+
+            const savedTrips = getSavedTrips();
+
+            existingTrip = savedTrips.find(
+                trip => String(trip.id) === String(editTripId)
+            );
+
+            if (existingTrip) {
+
+                tripName.value = existingTrip.tripName || "";
+                destination.value = existingTrip.destination || "";
+                startDate.value = existingTrip.startDate || "";
+                endDate.value = existingTrip.endDate || "";
+                travellers.value = existingTrip.travellers || "";
+                tripType.value = existingTrip.tripType || "";
+                budget.value = existingTrip.budget || "";
+                description.value = existingTrip.description || "";
+
+                // Heading change
+                document.querySelector(".top-header h1").textContent = "Edit Trip";
+
+                document.querySelector(".form-buttons .create-btn").textContent =
+                    "Save Changes";
+
+            } else {
+
+                alert("Trip not found!");
+                window.location.href = "my-trips.html";
+            }
+
+        } else if (selectedDestination) {
+
+            destination.value = selectedDestination;
+        }
+
+
+        // Trip type ke according travellers set karna
+        tripType.addEventListener("change", function () {
+
+            if (this.value === "Solo") {
+                travellers.value = 1;
+            }
+            else if (this.value === "Couple") {
+                travellers.value = 2;
+            }
+            else {
+                travellers.value = "";
+            }
+
+        });
+
+
+        // FORM SUBMIT
         tripForm.addEventListener("submit", function (event) {
+
             event.preventDefault();
 
-            const startDate = document.getElementById("startDate").value;
-            const endDate = document.getElementById("endDate").value;
+            const start = startDate.value;
+            const end = endDate.value;
 
-            if (new Date(endDate + "T00:00:00") < new Date(startDate + "T00:00:00")) {
+            if (new Date(end + "T00:00:00") < new Date(start + "T00:00:00")) {
                 alert("End date cannot be earlier than start date.");
                 return;
             }
-            const destination = document.getElementById("destination").value;
+
+            const savedTrips = getSavedTrips();
 
             const imageMap = JSON.parse(
                 localStorage.getItem("aryanDestinationImages") || "{}"
             );
 
-            const destinationImage = imageMap[destination.toLowerCase()] || "";
+            const selectedImage =
+                imageMap[destination.value.toLowerCase()] || "";
 
-            const trip = {
-                id: Date.now().toString(),
-                tripName: document.getElementById("tripName").value.trim(),
-                destination: destination,
-                destinationImage: destinationImage,
-                startDate: startDate,
-                endDate: endDate,
-                travellers: Number(document.getElementById("travellers").value),
-                tripType: document.getElementById("tripType").value,
-                budget: Number(document.getElementById("budget").value),
-                description: document.getElementById("description").value.trim(),
-                createdAt: new Date().toISOString(),
-            };
+            if (editTripId) {
 
-            const savedTrips = JSON.parse(
-                localStorage.getItem(TRIPS_STORAGE_KEY) || "[]"
-            );
+                // EXISTING TRIP UPDATE KARNA
+                const tripIndex = savedTrips.findIndex(
+                    trip => String(trip.id) === String(editTripId)
+                );
 
-            savedTrips.push(trip);
+                if (tripIndex === -1) {
+                    alert("Trip not found!");
+                    return;
+                }
 
-            localStorage.setItem(
-                TRIPS_STORAGE_KEY,
-                JSON.stringify(savedTrips)
-            );
+                const oldTrip = savedTrips[tripIndex];
 
-            alert("Trip created successfully!");
+                savedTrips[tripIndex] = {
+                    ...oldTrip,
+
+                    tripName: tripName.value.trim(),
+                    destination: destination.value,
+
+                    destinationImage:
+                        destination.value === oldTrip.destination
+                            ? oldTrip.destinationImage
+                            : selectedImage,
+
+                    startDate: start,
+                    endDate: end,
+                    travellers: Number(travellers.value),
+                    tripType: tripType.value,
+                    budget: Number(budget.value),
+                    description: description.value.trim(),
+
+                    updatedAt: new Date().toISOString()
+                };
+
+                localStorage.setItem(
+                    TRIPS_STORAGE_KEY,
+                    JSON.stringify(savedTrips)
+                );
+
+                alert("Trip updated successfully!");
+
+            } else {
+
+                // NEW TRIP CREATE KARNA
+                const newTrip = {
+                    id: Date.now().toString(),
+                    tripName: tripName.value.trim(),
+                    destination: destination.value,
+                    destinationImage: selectedImage,
+                    startDate: start,
+                    endDate: end,
+                    travellers: Number(travellers.value),
+                    tripType: tripType.value,
+                    budget: Number(budget.value),
+                    description: description.value.trim(),
+                    createdAt: new Date().toISOString()
+                };
+
+                savedTrips.push(newTrip);
+
+                localStorage.setItem(
+                    TRIPS_STORAGE_KEY,
+                    JSON.stringify(savedTrips)
+                );
+
+                alert("Trip created successfully!");
+            }
 
             window.location.href = "my-trips.html";
+
         });
 
     </script>

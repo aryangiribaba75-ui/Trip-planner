@@ -1106,6 +1106,11 @@
                             View
                         </button>
 
+                        <button class="action-btn edit-btn"
+                            onclick="editTrip('${trip.id}')">
+                            Edit
+                        </button>
+
                         <button class="action-btn delete-btn"
                             onclick="deleteTrip('${trip.id}')">
                             Delete
@@ -1137,6 +1142,20 @@
             renderTrips();
         }
 
+        function editTrip(id) {
+            const trip = getSavedTrips().find(
+                item => String(item.id) === String(id)
+            );
+
+            if (!trip) {
+                alert("Trip not found!");
+                return;
+            }
+
+            window.location.href =
+                `create-trip.html?editTripId=${encodeURIComponent(trip.id)}`;
+        }
+
         function viewTrip(id) {
             const trip = getSavedTrips().find(item => String(item.id) === String(id));
 
@@ -1147,6 +1166,20 @@
 
             // Open the itinerary for the selected trip.
             window.location.href = `itinerary.html?tripId=${encodeURIComponent(trip.id)}`;
+        }
+
+        function editTrip(id) {
+            const trip = getSavedTrips().find(
+                item => String(item.id) === String(id)
+            );
+
+            if (!trip) {
+                alert("Trip not found!");
+                return;
+            }
+
+            window.location.href =
+                `create-trip.html?editTripId=${encodeURIComponent(trip.id)}`;
         }
 
         document.addEventListener("DOMContentLoaded", renderTrips);

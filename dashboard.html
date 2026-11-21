@@ -362,6 +362,15 @@
     }
 
     saveDestinationImages();
+    // Make popular destination cards clickable
+    document.querySelectorAll(".destination-card").forEach(card => {
+      card.addEventListener("click", function () {
+        const destination = this.querySelector("h3").textContent.trim();
+
+        window.location.href =
+          "create-trip.html?destination=" + encodeURIComponent(destination);
+      });
+    });
   </script>
 </body>
 
